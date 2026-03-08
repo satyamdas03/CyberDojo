@@ -102,9 +102,6 @@ python main.py battle --red swarm --blue commander --scenario "Bank" --visualize
 # 🏋️ Train RL agents through co-evolution
 python main.py train --red-algo ppo --blue-algo ppo --timesteps 100000
 ```
-
-Then open **http://127.0.0.1:5000** to see the live dashboard.
-
 ---
 
 ## 🏗️ Architecture
