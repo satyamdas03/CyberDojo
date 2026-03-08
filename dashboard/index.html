@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberDojo — Adversarial AI War Games</title>
+    <meta name="description" content="Real-time visualization of AI red team vs blue team cyber battles">
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+    <!-- Animated background grid -->
+    <div class="grid-bg"></div>
+    <div class="scanline"></div>
+
+    <!-- Header -->
+    <header id="main-header">
+        <div class="header-left">
+            <div class="logo">
+                <span class="logo-icon">⚔️</span>
+                <h1>CYBERDOJO</h1>
+            </div>
+            <span class="subtitle">Adversarial AI War Games</span>
+        </div>
+        <div class="header-center">
+            <div class="status-badge" id="connection-status">
+                <span class="pulse-dot"></span>
+                <span>CONNECTING</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="stat-chip red-glow">
+                <span class="stat-label">RED ELO</span>
+                <span class="stat-value" id="red-elo">1000</span>
+            </div>
+            <div class="stat-chip blue-glow">
+                <span class="stat-label">BLUE ELO</span>
+                <span class="stat-value" id="blue-elo">1000</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="dashboard">
+        <!-- Left Panel: Team Stats -->
+        <aside class="panel team-panel red-team" id="red-panel">
+            <div class="panel-header">
+                <span class="team-icon">🔴</span>
+                <h2>RED TEAM</h2>
+                <span class="team-role">ATTACKER</span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <span>Compromised</span>
+                    <span class="stat-val" id="red-compromised">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Data Stolen</span>
+                    <span class="stat-val" id="red-data-stolen">0.0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Backdoors</span>
+                    <span class="stat-val" id="red-backdoors">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Detections</span>
+                    <span class="stat-val warning" id="red-detections">0</span>
+                </div>
+                <div class="divider"></div>
+                <div class="action-display">
+                    <span class="action-label">LAST ACTION</span>
+                    <div class="action-name" id="red-action">—</div>
+                    <div class="action-target" id="red-target">—</div>
+                    <div class="action-mitre" id="red-mitre" style="display: none;">
+                        <span class="mitre-id" id="red-mitre-id"></span>
+                        <span class="mitre-name" id="red-mitre-name"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center: Network Visualization -->
+        <section class="panel network-panel" id="network-panel">
+            <div class="panel-header">
+                <h2>NETWORK TOPOLOGY</h2>
+                <div class="step-counter">
+                    <span>STEP</span>
+                    <span class="step-value" id="step-counter">0</span>
+                    <span>/</span>
+                    <span id="max-steps">100</span>
+                </div>
+            </div>
+            <div class="network-container" id="network-graph">
+                <svg id="network-svg" width="100%" height="100%"></svg>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="dot clean"></span>Clean</div>
+                <div class="legend-item"><span class="dot compromised"></span>Compromised</div>
+                <div class="legend-item"><span class="dot detected"></span>Detected</div>
+                <div class="legend-item"><span class="dot isolated"></span>Isolated</div>
+                <div class="legend-item"><span class="dot critical"></span>Critical</div>
+                <div class="legend-item"><span class="dot honeypot"></span>Honeypot</div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Blue Team Stats -->
+        <aside class="panel team-panel blue-team" id="blue-panel">
+            <div class="panel-header">
+                <span class="team-icon">🔵</span>
+                <h2>BLUE TEAM</h2>
+                <span class="team-role">DEFENDER</span>
+            </div>
+            <div class="panel-body">
+                <div class="stat-row">
+                    <span>Patches</span>
+                    <span class="stat-val" id="blue-patches">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Isolations</span>
+                    <span class="stat-val" id="blue-isolations">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Detections</span>
+                    <span class="stat-val success" id="blue-detections">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>False Positives</span>
+                    <span class="stat-val warning" id="blue-false-pos">0</span>
+                </div>
+                <div class="divider"></div>
+                <div class="action-display">
+                    <span class="action-label">LAST ACTION</span>
+                    <div class="action-name" id="blue-action">—</div>
+                    <div class="action-target" id="blue-target">—</div>
+                    <div class="action-mitre" id="blue-mitre" style="display: none;">
+                        <span class="mitre-id" id="blue-mitre-id"></span>
+                        <span class="mitre-name" id="blue-mitre-name"></span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Bottom Panel: Event Log & Training Charts -->
+    <section class="bottom-section">
+        <div class="panel event-log-panel" id="event-log-panel">
+            <div class="panel-header">
+                <h2>⚡ BATTLE LOG</h2>
+                <button class="clear-btn" id="clear-log">CLEAR</button>
+            </div>
+            <div class="event-log" id="event-log">
+                <div class="log-entry system">
+                    <span class="log-time">00:00</span>
+                    <span class="log-msg">Awaiting battle data...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel chart-panel" id="chart-panel">
+            <div class="panel-header">
+                <h2>📊 TRAINING METRICS</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="elo-chart" width="400" height="200"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="score-chart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Cyber Commander Chat -->
+        <div class="panel cyber-commander-panel" id="cyber-commander-panel">
+            <div class="panel-header"
+                style="background: rgba(16, 185, 129, 0.1); border-bottom-color: rgba(16, 185, 129, 0.2);">
+                <h2 style="color: var(--green-primary);">🧠 CYBER COMMANDER</h2>
+                <span style="font-size: 10px; color: var(--green-primary);">HUMAN IN/LOOP</span>
+            </div>
+            <div class="chat-log" id="commander-log">
+                <div class="chat-msg system">
+                    System: LLM Commander offline in demo mode. Launch with app-specific server for Chat.
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="commander-input" placeholder="Type orders for the Blue Team..." disabled />
+                <button id="commander-send" disabled>SEND</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Hacker Chatroom (APT Swarm mode) -->
+    <div class="panel hacker-chatroom-panel" id="hacker-chatroom-panel" style="display:none;">
+        <div class="panel-header"
+            style="background: rgba(239, 68, 68, 0.08); border-bottom-color: rgba(239, 68, 68, 0.2);">
+            <h2 style="color: var(--red-glow);">💀 INTERCEPTED HACKER CHATROOM</h2>
+            <span style="font-size: 10px; color: var(--red-glow);">APT SWARM COMMS</span>
+        </div>
+        <div class="chat-log hacker-log" id="hacker-log">
+            <div class="chat-msg system">
+                Listening for APT swarm communications...
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Tooltip (hover) -->
+    <div class="node-tooltip" id="node-tooltip">
+        <div class="tooltip-header">
+            <span class="tooltip-name" id="tooltip-name">—</span>
+            <span class="tooltip-status" id="tooltip-status">CLEAN</span>
+        </div>
+        <div class="tooltip-body">
+            <div class="tooltip-row"><span>🖥️ OS</span><span id="tooltip-os">linux</span></div>
+            <div class="tooltip-row"><span>🔌 Services</span><span id="tooltip-services">—</span></div>
+            <div class="tooltip-row"><span>⚠️ Alert</span><span id="tooltip-alert">0.00</span></div>
+            <div class="tooltip-row"><span>🔐 Access</span><span id="tooltip-access">none</span></div>
+            <div class="tooltip-row"><span>💎 Data Value</span><span id="tooltip-value">0</span></div>
+            <div class="tooltip-row"><span>🏷️ Subnet</span><span id="tooltip-subnet">—</span></div>
+        </div>
+        <div class="tooltip-hint">Click to issue commands</div>
+    </div>
+
+    <!-- Node Action Menu (click) -->
+    <div class="node-action-menu" id="node-action-menu">
+        <div class="action-menu-title" id="action-menu-title">—</div>
+
+        <!-- BLUE TEAM ACTIONS (defense) -->
+        <div class="action-menu-grid blue-actions" id="blue-actions">
+            <button class="action-btn" data-action="monitor_traffic" title="Monitor Traffic">
+                <span class="action-btn-icon">📡</span><span class="action-btn-label">Monitor</span>
+            </button>
+            <button class="action-btn" data-action="analyze_alert" title="Analyze Alert">
+                <span class="action-btn-icon">🔍</span><span class="action-btn-label">Analyze</span>
+            </button>
+            <button class="action-btn isolate" data-action="isolate_node" title="Isolate Node">
+                <span class="action-btn-icon">🔒</span><span class="action-btn-label">Isolate</span>
+            </button>
+            <button class="action-btn" data-action="patch_vulnerability" title="Patch Vulnerability">
+                <span class="action-btn-icon">🛡️</span><span class="action-btn-label">Patch</span>
+            </button>
+            <button class="action-btn" data-action="deploy_honeypot" title="Deploy Honeypot">
+                <span class="action-btn-icon">🍯</span><span class="action-btn-label">Honeypot</span>
+            </button>
+            <button class="action-btn" data-action="restore_backup" title="Restore Backup">
+                <span class="action-btn-icon">♻️</span><span class="action-btn-label">Restore</span>
+            </button>
+            <button class="action-btn" data-action="forensic_analysis" title="Forensic Analysis">
+                <span class="action-btn-icon">🧬</span><span class="action-btn-label">Forensics</span>
+            </button>
+            <button class="action-btn" data-action="deploy_ids_rule" title="Deploy IDS Rule">
+                <span class="action-btn-icon">📋</span><span class="action-btn-label">IDS Rule</span>
+            </button>
+        </div>
+
+        <!-- RED TEAM ACTIONS (offense) -->
+        <div class="action-menu-grid red-actions" id="red-actions" style="display:none;">
+            <button class="action-btn red-btn" data-action="scan_network" title="Scan Network">
+                <span class="action-btn-icon">📡</span><span class="action-btn-label">Scan Net</span>
+            </button>
+            <button class="action-btn red-btn" data-action="scan_vulnerability" title="Scan Vulnerabilities">
+                <span class="action-btn-icon">🔍</span><span class="action-btn-label">Scan Vuln</span>
+            </button>
+            <button class="action-btn red-btn exploit-btn" data-action="exploit" title="Exploit Vulnerability">
+                <span class="action-btn-icon">💥</span><span class="action-btn-label">Exploit</span>
+            </button>
+            <button class="action-btn red-btn" data-action="privilege_escalate" title="Privilege Escalation">
+                <span class="action-btn-icon">⬆️</span><span class="action-btn-label">Priv Esc</span>
+            </button>
+            <button class="action-btn red-btn" data-action="lateral_move" title="Lateral Movement">
+                <span class="action-btn-icon">↔️</span><span class="action-btn-label">Lateral</span>
+            </button>
+            <button class="action-btn red-btn" data-action="install_backdoor" title="Install Backdoor">
+                <span class="action-btn-icon">🚪</span><span class="action-btn-label">Backdoor</span>
+            </button>
+            <button class="action-btn red-btn" data-action="exfiltrate_data" title="Exfiltrate Data">
+                <span class="action-btn-icon">📤</span><span class="action-btn-label">Exfiltrate</span>
+            </button>
+            <button class="action-btn red-btn" data-action="phish_user" title="Phish User">
+                <span class="action-btn-icon">🎣</span><span class="action-btn-label">Phish</span>
+            </button>
+        </div>
+
+        <!-- PEN TEST BUTTON (blue mode only — preview what Red could do) -->
+        <button class="action-btn pentest-btn" id="pentest-btn" data-action="pen_test"
+            title="Run Penetration Test Preview">
+            <span class="action-btn-icon">🔬</span><span class="action-btn-label">PEN TEST — Preview Exploits</span>
+        </button>
+
+        <button class="action-menu-close" id="action-menu-close">✕ CLOSE</button>
+    </div>
+
+    <!-- Winner Overlay -->
+    <div class="winner-overlay" id="winner-overlay" style="display:none;">
+        <div class="winner-content">
+            <div class="winner-icon" id="winner-icon">⚔️</div>
+            <h2 id="winner-text">BATTLE COMPLETE</h2>
+            <p id="winner-score"></p>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>

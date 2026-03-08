@@ -1,0 +1,55 @@
+# ───────────────────────────────────────
+# CyberDojo .gitignore
+# ───────────────────────────────────────
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+*.so
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & data
+logs/
+*.log
+*.csv
+*.h5
+*.pt
+*.pth
+
+# Test caches
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Exported artifacts
+sim2real_exports/
+
+# Reference documents (not code)
+*.pdf
+*.docx
+
+# Gemini agent brain
+.gemini/
